@@ -31,6 +31,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.afollestad.assent.Permission.READ_EXTERNAL_STORAGE
 import com.afollestad.assent.Permission.WRITE_EXTERNAL_STORAGE
 import com.afollestad.assent.runWithPermissions
@@ -344,14 +345,14 @@ class MainActivity : AppCompatActivity(),
 
     if (settingsLayout.visibility == GONE) {
       settingsLayout.visibility = VISIBLE
-      expandButton.setImageResource(R.drawable.ic_collapse)
+      transformButton(isExpanding = true)
       settingsFrameAnimator = ofObject(
           HeightEvaluator(settingsLayout),
           0,
           originalSettingsFrameHeight
       )
     } else {
-      expandButton.setImageResource(R.drawable.ic_expand)
+      transformButton(isExpanding = false)
       settingsFrameAnimator = ofObject(
           HeightEvaluator(settingsLayout),
           originalSettingsFrameHeight,
@@ -365,5 +366,21 @@ class MainActivity : AppCompatActivity(),
       duration = 200
       start()
     }
+  }
+
+  private fun transformButton(isExpanding: Boolean) {
+    val vectorDrawable =
+      when (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+        true -> AnimatedVectorDrawableCompat.create(
+          applicationContext,
+          if (isExpanding) R.drawable.ic_expand_animated
+          else R.drawable.ic_collapse_animated)
+        false -> applicationContext.resources.getDrawable(
+          if (isExpanding) R.drawable.ic_collapse
+          else R.drawable.ic_expand)
+      }
+
+    expandButton.setImageDrawable(vectorDrawable)
+    (vectorDrawable as? AnimatedVectorDrawableCompat)?.start()
   }
 }
